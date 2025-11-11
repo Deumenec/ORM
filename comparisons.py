@@ -55,4 +55,3 @@ def columnComparison(matrix1, matrix2):
 matrix1 = np.array([[0,2], [2,3], [5, 6]])
 matrix2 = np.array([[0,2], [2,3], [6, 7]])
 
-print(columnComparison(matrix1, matrix2))
