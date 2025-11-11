@@ -13,7 +13,7 @@ import matplotlib.pyplot as plt
 import comparisons
 
 calc_num_dORM = False
-calc_analytic_dORM = False
+calc_analytic_dORM = True
 
 def dORM_dqV (ring, dipoleIndex, ResponseClass, step, originalORM):
     ring[dipoleIndex].PolynomB += step
@@ -29,7 +29,7 @@ def Cijn(phi_i, phi_j, nu, n):
     return(np.cos(n*abs(phi_i-phi_j)-n*np.pi*nu))
 def Sijn(phi_i, phi_j, nu, n):
     """
-    shorthand for the sine defined in the report
+    Shorthand for the sine defined in the report
     """
     return(np.sign(phi_i-phi_j)*np.sin(n*abs(phi_i-phi_j)-n*np.pi*nu))
 
@@ -92,7 +92,6 @@ def analyticdORM_dqV(ring, ind_bpm, ind_cor, ind_quad):
     bpmTune = [i[1] for i in bpmOptics[2]["mu"]] #Important, mu doesn't have the /2pi factor in atcollab!
     corTune = [i[1] for i in corOptics[2]["mu"]]
     quadTune= [i[1] for i in quadOptics[2]["mu"]]
-    
     dORM_dqV = []
     for k in range(len(ind_quad)):
         dORM_dqV.append([])
@@ -171,13 +170,12 @@ dades1= 100000*dimSSD(ORMv, ana_ORMv, 1)
 dades2= dimSSD(ORMv, np.zeros([120, 88]), 1)
 dades3= dimSSD(ana_ORMv, np.zeros([120, 88]), 1)
 
-
 plt.plot(dades1, color = "red", label = "10^5 ORM difference")
 plt.plot(dades2, color = "blue", label = "analytical ORM")
 plt.plot(dades3,color ="green", linestyle = "--", label = "numerical ORM")
 plt.xlabel("BPM index", loc = "right")
 plt.legend()
 
-plt.savefig("ORMSSDBPMS.pdf")
+#plt.savefig("ORMSSDBPMS.pdf")
 
 
