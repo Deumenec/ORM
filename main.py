@@ -10,12 +10,12 @@ import os
 import numpy as np
 import tqdm
 import matplotlib.pyplot as plt
-import comparisons
+
 
 #Program options
 calc_num_ORM = False
 calc_num_dORM = False
-calc_analytic_dORM = True
+calc_analytic_dORM = False
 calc_ORM_statistics = False
 
 def dORM_dqV (ring, quadIndex, ResponseClass, step, originalORM):
@@ -120,6 +120,8 @@ def analyticdORM_dqV(ring, ind_bpm, ind_cor, ind_quad):
             for j in range(len(ind_cor)):
                 dORM_dqV[k][i][j]=dRij_dk(bpmBeta[i], corBeta[j], quadBeta[k], quadLen[k], tune, bpmTune[i], corTune[j], quadTune[k])
     return dORM_dqV
+
+
     
 def analyticORM(ring, ind_bpm, ind_cor):
     """
@@ -193,6 +195,7 @@ ana_ORMv = analyticORM(ring, ind_bpm, ind_cor)
 ring[15].PolynomB += 0.00001
 ana_num_dORMdq1 = -(ana_ORMv-analyticORM(ring, ind_bpm, ind_cor))/0.00001
 """
+
 if(calc_ORM_statistics ==True):
     #Define variables to be plotted
     dades1= 100000*dimSSD(ORMv, ana_ORMv, 1)
@@ -206,5 +209,6 @@ if(calc_ORM_statistics ==True):
     plt.legend()
     #plt.savefig("ORMSSDBPMS.pdf")
     plt.close()
+
 
 
