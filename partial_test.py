@@ -19,14 +19,14 @@ import numpy as np
 import tqdm
 import matplotlib.pyplot as plt
 
-def vectorPlot(vectors, vecNames, savename=False):
+def vectorPlot(vectors, vecNames, savename):
     """ Creates a plot commparing the components of vectors of equal length"""
     colors = plt.cm.rainbow(np.linspace(0, 1, len(vectors)))
     for i, vector in enumerate(vectors):
         plt.plot(vector, color = colors[i], label= vecNames[i])
     plt.legend()
-    plt.show()
-    if (savename != False): plt.savefig(savename)
+    plt.savefig("dORMs_comparison.pdf", format = "pdf")
+    plt.show() #Això ha de ser l'últim perqué es peta la figura
     return
 
 def Cijn(phi_i, phi_j, nu, n):
@@ -144,7 +144,8 @@ def dORMdqi(ring, ind_bpm, ind_cor, dbbpm_dqk, dbcor_dqk, dnu_dqk, dpsibpm_dqk, 
                 result[k][i][j]= dbi_term + dbj_term + dtune_term + dpsii_term + dpsij_term
     return result
 
-os.chdir('Z:\Projectes\ORM\ORM') #Set my working directory!
+#os.chdir('Z:\Projectes\ORM\ORM') #Set my working directory!
+os.chdir('/Users/deumenec/Documents/Uni/9é semestre/ALBA/Teoria/ORM_compare') #Set my working directory!
 ring = at.load_mat('THERING.mat')
 step = 0.0000001
 
