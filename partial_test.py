@@ -25,7 +25,7 @@ def vectorPlot(vectors, vecNames, savename):
     for i, vector in enumerate(vectors):
         plt.plot(vector, color = colors[i], label= vecNames[i])
     plt.legend()
-    plt.savefig("dORMs_comparison.pdf", format = "pdf")
+    plt.savefig(os.path.join("plots", savename), format = "pdf")
     plt.show() #Això ha de ser l'últim perqué es peta la figura
     return
 
@@ -144,25 +144,87 @@ def dORMdqi(ring, ind_bpm, ind_cor, dbbpm_dqk, dbcor_dqk, dnu_dqk, dpsibpm_dqk, 
                 result[k][i][j]= dbi_term + dbj_term + dtune_term + dpsii_term + dpsij_term
     return result
 
-#os.chdir('Z:\Projectes\ORM\ORM') #Set my working directory!
-os.chdir('/Users/deumenec/Documents/Uni/9é semestre/ALBA/Teoria/ORM_compare') #Set my working directory!
-ring = at.load_mat('THERING.mat')
-step = 0.0000001
+def calculate_num_dORM_dq(ring, ind_bpm, ind_cor, ind_quad, step, direction):
+    """
+    
+    Parameters
+    ----------
+    ring : at.lattice
+        Ring for which the matrix is calculated
+    ind_bpm : array
+        indices of the BPMs for the ORM matrix
+    ind_cor : array
+        indices of the correctors for the ORM matrix
+    ind_quad : array
+        indices 
+    dimension : char
+        "v" for the vertical dimension and "h"
+    Returns
+    -------
+    num_dORM_dq: np.array 
+        The dORM_dq rank 3 tensor with indices dORM_dq[quadrupole][bpm][corrector]
+    """
+    num_dORM_dq = np.zeros([len(ind_quad), len(ind_bpm), len(ind_cor)])
+    Resp = at.latticetools.OrbitResponseMatrix(ring,direction, ind_bpm, ind_cor) #class for computing the ORM
+    Resp.build_tracking()
+    ORM = Resp.response
+    for k, quad in tqdm.tqdm(enumerate(ind_quad)):
+        ring[ind_quad[0]].PolynomB[1] +=step
+        Resp.build_tracking()
+        num_dORM_dq[k] = (Resp.response-ORM)/step
+        ring[ind_quad[0]].PolynomB[1] -=step
+    return num_dORM_dq
+    
+os.chdir('Z:\Projectes\ORM') #Set my working directory!
+#os.chdir('/Users/deumenec/Documents/Uni/9é semestre/ALBA/Teoria/ORM_compare') #Set my working directory!
 
+###############################################################################
+#
+# Parameters to pass for the calculations
+#
+###############################################################################
 
-ind_bpm = at.get_refpts(ring, 'BPM')   # family name, adjust to your lattice
-ind_cor = at.get_refpts(ring, 'COR')  # horizontal correctors
-ind_Vquad = at.get_refpts(ring, lambda el: el.FamName.startswith('QV'))
-ind_Hquad = at.get_refpts(ring, lambda el: el.FamName.startswith('QH'))
+lattice_file   = 'THERING.mat'
+lattice_path   = 'lattices'
+results        = 'results'
+direction      = 'v'
+step = 0.0000001 
+#Steps for finite difference derivatives
+
+compute_num_dORM = True
+#To the numerical dORM_dq using tracking from ATcollab
+
+compute_thin_ana_dORM = True
+#Uses the analytical formulas to calculate dORM_dq under the thin lens aproximation
+
+compute_thin_partial_derivatives = False
+#Computes partial derivatives of optical functions with respect to quadrupole strengths
+#Using both analytical and numerical methods and compares them
+
+compare_dORMs = True
+#Compares the dORM/dq by contracting its differences along each dimension
+
+ring = at.load_mat(os.path.join(lattice_path, lattice_file))
+
+ind_bpm = at.get_refpts(ring, 'BPM')  #Indices for the BPM
+ind_cor = at.get_refpts(ring, 'COR')  #Indices for the correctors
+ind_quad = { 'v' : at.get_refpts(ring, lambda el: el.FamName.startswith('QV')),
+             'h' :  at.get_refpts(ring, lambda el: el.FamName.startswith('QH'))}
+
+if (compute_num_dORM == True):
+    dORM_num = calculate_num_dORM_dq(ring, ind_bpm, ind_cor, ind_quad[direction], step, direction)
+    np.save(os.path.join(results, "numdORM_dq"),dORM_num )
+if (compute_num_dORM == False):
+    dORM_num = np.load(os.path.join(results, "numdORM_dq"))
 
 #ana_dnu, num_dnu = dnu_dq(ring, ind_Vquad, step)
 #vectorPlot([ana_dnu, num_dnu], ["Analytical dtune/dq", "Numerical dtune/dq"] ,savename = "dtune.pdf")
 
 #ana_db, num_db =  dbi_dq(ring, ind_bpm, ind_Vquad, step)
-#vectorPlot([ana_db[10], num_db[10]], ["Analytic db/dq", "Numerical db/dq"], savename = "db for k=10 in BPMs.pdf")
+#vectorPlot([ana_db[10], num_db[10]], ["Analytic db/dq", "Numerical db/dq"], savename = "db_k_10_BPMs.pdf")
 
 #ana_dpsi, num_dpsi = dpsi_dq(ring, ind_bpm, ind_Vquad, step)
-#vectorPlot([ana_dpsi[20], num_dpsi[20]], ["Analytic dpsi/dq", "Numerical dpsi/dq"], savename = "dpsi for k=20 in BPMs.pdf")
+#vectorPlot([ana_dpsi[20], num_dpsi[20]], ["Analytic dpsi/dq", "Numerical dpsi/dq"], savename = "dpsi_k_20_BPMs.pdf")
 
 ORM = analyticORM(ring, ind_bpm, ind_cor)
 ring[ind_Vquad[0]].PolynomB[1] +=step
